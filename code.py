@@ -1,3 +1,7 @@
+# Uses the Person Sensor from Useful Sensors to orient a carousel towards the
+# nearest face.
+# See https://usfl.ink/ps_dev for the full developer guide.
+
 import board
 import busio
 import pwmio
