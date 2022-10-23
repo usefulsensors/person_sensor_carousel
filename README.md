@@ -1,4 +1,4 @@
-# Person Sensor Screen Locker
+# Person Sensor Carousel
 Orient a carousel to the nearest face using a Person Sensor.
 
 ## Introduction
@@ -42,63 +42,74 @@ headers yourself if you don't have a Pico H.
     - Red (5V) should go to pin 40.
     - Yellow (DATA) should go to pin 1.
 
-Plug one end of the Qwiic cable into the Person Sensor, and the other into the
-Trinkey. They each only have a single port, and Qwiic connectors can only be
-attached one way, so it should hopefully be straightforward.
+A full wiring diagram is included below.
 
-## Install CircuitPython
+### Person Sensor
 
-Hold down the `bootsel` button and plug the Trinkey into a USB port of your
-desktop or laptop machine. You should see a drive called `RPI-RP2` appear in
-your file system.
+Wiring up the sensor requires 4 jumpers, to connect VDD, GND, SDA and SCL. We're
+using I2C port 0, which on the Pico is assigned to GPIO4 (SDA, pin 6) and GPIO5
+(SCL, pin 7) in software. Power is supplied from 3V3(OUT) (pin 36), with ground
+attached to GND (pin 38). If you're using [Qwiic connectors](https://www.sparkfun.com/qwiic),
+the colors  will be black for GND, red for 3.3V, blue for SDA, and yellow for
+SDC. It's the same setup as the [introductory CircuitPython sample code](https://github.com/usefulsensors/person_sensor_circuit_python).
 
-There's a [step by step guide to installing CircuitPython on a Trinkey](https://learn.adafruit.com/adafruit-trinkey-qt2040/circuitpython)
-but the summary is that you download [CircuitPython for the Trinkey](https://circuitpython.org/board/adafruit_qt2040_trinkey/),
-and copy it onto the `RPI-RP2` drive. Once the copying has completed, you should
-see a new `CIRCUITPYTHON` drive appear instead.
+### Wiring
+
+![Person Sensor Carousel Wiring Diagram](pico_person_sensor_carousel_bb.png)
+
+### Mounting
+
+The Person Sensor needs to be mounted on the plate of the carousel. If you're
+actually skilled you can probably do something fancy like 3D printing a part,
+but since I'm just a simple CEO I resorted to Blu Tack. It doesn't matter where
+on the plate the sensor is mounted as long as it is facing outward, the
+connector is on the top, and its view won't be blocked by anything you place on
+the carousel.
+
+![Blu Tack mounting horror](sensor_mounting.jpg)
+
+## Setting up Circuit Python
+
+You should read the [official guide to setting up CircuitPython on a Pico](https://learn.adafruit.com/getting-started-with-raspberry-pi-pico-circuitpython)
+for the latest information, but here is a summary:
+
+ - Download CircuitPython for your board from circuitpython.org. The Pico
+ version is available at https://circuitpython.org/board/raspberry_pi_pico/.
+ This project has been tested using the `8.0.0-beta.2` version.
+ - Hold down the `bootsel` button on the Pico and plug it into a USB port.
+ - Drag the CircuitPython uf2 file onto the `RPI-RP2` drive that appears.
+
+Once you've followed those steps, you should see a new `CIRCUITPY` drive appear.
+You can now drag `code.py` files onto that drive and the Pico should run them.
 
 ## Install Libraries
 
-The application works by emulating a keyboard and sending keypresses to the main
-machine to lock the screen, or minimize the main window. We need the [adafruit_hid library](https://docs.circuitpython.org/projects/hid/en/latest/)
-to do the emulation, so the first step is to download a big bundle of all the
-CircuitPython libraries from [circuitpython.org/libraries](https://circuitpython.org/libraries). You'll need to find the right bundle for your CircuitPython version.
+We need the [adafruit_motor library](https://docs.circuitpython.org/projects/motor/en/latest/)
+to control the servo for the carousel, so the first step is to download a big
+bundle of all the CircuitPython libraries from [circuitpython.org/libraries](https://circuitpython.org/libraries).
+You'll need to find the right bundle for your CircuitPython version.
 
 Once you have that downloaded, unpack the bundle on your local machine. In the
 file viewer, go to the `lib` folder within the unpacked bundle and copy the
-`adafruit_hid` directory into the `lib` folder on the `CIRCUITPYTHON` drive.
+`adafruit_motor` directory into the `lib` folder on the `CIRCUITPYTHON` drive.
 This should install the library we need to emulate a keyboard.
-
-## Customize for your OS
-
-If you're on Windows, the code in this repository should work with no changes.
-On MacOS or Linux you'll need to modify what keys are sent to cause the screen
-to lock. If you look at the end of `code.py`, you should see commented-out
-options for the different operating systems.
 
 ## Install the Code
 
-Now your Trinkey is set up, copy the `code.py` file from this repository into
+Now your carousel is set up, copy the `code.py` file from this repository into
 the `CIRCUITPYTHON` drive. You should notice that the green LED on the Person
-Sensor lights up when it sees your face. If you point it away from yourself for
-more than five seconds, you should find that the screen locks! It will also
-attempt to minimize the current window if it detects somebody looking over your
-shoulder for more than a second.
-
-The sensor needs to be the right way up, with the connector at the top, and
-pointing towards you. If you have a long enough Qwiic cable, you can try
-mounting it on the top of your laptop screen.
+Sensor lights up when it sees your face, and the carousel rotates until it is
+facing towards you.
 
 ## Next Steps
 
-The timings for the screen locking and window minimization are controlled by the
-`MAIN_FACE_TIMEOUT_SECONDS` and `LOOKIE_LOO_TIMEOUT_SECONDS` values in the code.
-You can also change how large the face needs to be to be counted with the
-`MAIN_FACE_MIN_WIDTH` and `MAIN_FACE_MIN_HEIGHT` variables.
+The algorithm that controls the servo and moves it towards the nearest face is
+quite simple, and could be improved if you want smoother animation. Right now it
+only updates the position about five times a second, the same rate as the sensor
+updates, but you could use much smaller timesteps for the movement to get less
+jerky rotation. You could also add in some smoothing to give ease in and out to
+make it less robotic.
 
-This project is intended as an example of what's possible when you can access
-ML capabilities as simply as any other hardware component. There's also an
-Arduino version available at [github.com/robotastic/useful-autolock](https://github.com/robotastic/useful-autolock),
-and you can find out more about the Person Sensor from our [full developer guide](https://usfl.ink/ps_dev).
+You can also find out more about the Person Sensor from our [full developer guide](https://usfl.ink/ps_dev).
 We're looking forward to seeing what the creative minds of the maker community
 come up with, so please let us know how you get on!
